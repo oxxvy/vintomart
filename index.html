@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AirdropAI Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#03060f;--bg2:#070d1c;--card:#0b1225;--card2:#0f1830;--gold:#f0b429;--gold2:#ffe08a;--cyan:#00d4ff;--green:#00e676;--red:#ff4560;--orange:#ff8c42;--purple:#a855f7;--text:#dce8f5;--muted:#4a6480;--soft:#7a9ab8;--border:rgba(240,180,41,.12);--b2:rgba(0,212,255,.12);--b3:rgba(255,255,255,.06)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6;overflow-x:hidden;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(240,180,41,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(240,180,41,.02) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+/* AUTH */
+#authScreen{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center}
+.auth-box{width:420px;max-width:95vw;background:var(--card);border:1px solid var(--border);padding:44px;position:relative;overflow:hidden}
+.auth-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2),transparent)}
+.auth-logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--gold);margin-bottom:4px}
+.auth-sub{font-size:12px;color:var(--muted);margin-bottom:30px}
+.auth-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:26px}
+.auth-tab{padding:10px 22px;cursor:pointer;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.auth-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.auth-form{display:none}.auth-form.active{display:block}
+.field{margin-bottom:15px}
+.field label{display:block;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field input{width:100%;background:rgba(0,0,0,.5);border:1px solid var(--b3);color:var(--text);padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border .2s}
+.field input:focus{border-color:rgba(240,180,41,.4)}
+.auth-btn{width:100%;background:var(--gold);color:#000;border:none;padding:14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background .2s;margin-top:6px}
+.auth-btn:hover{background:var(--gold2)}
+.auth-err{color:var(--red);font-size:12px;margin-top:8px;display:none}
+.auth-note{font-size:11px;color:var(--muted);text-align:center;margin-top:14px}
+.auth-note span{color:var(--gold);cursor:pointer;text-decoration:underline}
+
+/* APP */
+#appShell{display:none;min-height:100vh;position:relative;z-index:1}
+.sidebar{width:230px;background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:50;display:flex;flex-direction:column}
+.sb-logo{padding:22px 20px 18px;border-bottom:1px solid var(--border)}
+.sb-logo-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--gold);line-height:1.15}
+.sb-logo-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.sb-user{padding:14px 20px;border-bottom:1px solid var(--border);background:rgba(240,180,41,.04)}
+.sb-user-name{font-size:13px;font-weight:600;color:var(--text)}
+.sb-user-role{font-size:10px;color:var(--muted);margin-top:1px}
+.sb-section{padding:16px 20px 5px;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;border-left:3px solid transparent;color:var(--soft);font-size:13px;transition:all .15s;user-select:none}
+.sb-item:hover{background:rgba(240,180,41,.05);color:var(--text)}
+.sb-item.active{border-left-color:var(--gold);background:rgba(240,180,41,.07);color:var(--gold)}
+.sb-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.sb-bottom{margin-top:auto;border-top:1px solid var(--border);padding:14px 20px}
+.logout-btn{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;cursor:pointer;transition:color .2s}
+.logout-btn:hover{color:var(--red)}
+
+.main{margin-left:230px;padding:28px 28px 80px;position:relative;z-index:1}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:26px;gap:12px;flex-wrap:wrap}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:2px;color:#fff;line-height:1}
+.page-title span{color:var(--gold)}
+.date-chip{background:var(--card);border:1px solid var(--border);color:var(--soft);padding:7px 14px;font-size:11px;font-family:'JetBrains Mono',monospace}
+
+.panel{display:none;animation:fadeUp .3s ease}.panel.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:var(--card);border:1px solid var(--border);padding:22px 24px;margin-bottom:16px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),transparent)}
+.card.cc::before{background:linear-gradient(90deg,var(--cyan),transparent)}
+.card.gc::before{background:linear-gradient(90deg,var(--green),transparent)}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1.5px;color:#fff;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.ctsub{font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:1px;color:var(--muted);font-weight:400;text-transform:uppercase}
+
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.stat-box{background:var(--card);border:1px solid var(--border);padding:18px 16px;text-align:center}
+.stat-n{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold);letter-spacing:1px;display:block;line-height:1.1}
+.stat-n.g{color:var(--green)}.stat-n.c{color:var(--cyan)}.stat-n.r{color:var(--red)}
+.stat-l{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:4px;display:block}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.fr3{grid-template-columns:1fr 1fr 1fr}
+.fg{margin-bottom:14px}
+label.lbl{display:block;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+input,select,textarea{background:rgba(0,0,0,.45);border:1px solid var(--b3);color:var(--text);padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13px;width:100%;outline:none;transition:border .2s;border-radius:0;-webkit-appearance:none;appearance:none}
+input:focus,select:focus,textarea:focus{border-color:rgba(240,180,41,.4)}
+select option{background:#0b1225;color:var(--text)}
+textarea{resize:vertical;min-height:75px}
+
+.btn{padding:10px 22px;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border:none;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-gold{background:var(--gold);color:#000}.btn-gold:hover{background:var(--gold2);transform:translateY(-1px)}
+.btn-out{background:transparent;border:1px solid var(--border);color:var(--muted)}.btn-out:hover{border-color:var(--gold);color:var(--gold)}
+.btn-red{background:rgba(255,69,96,.1);border:1px solid rgba(255,69,96,.3);color:var(--red)}.btn-red:hover{background:rgba(255,69,96,.2)}
+.btn-cyan{background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.3);color:var(--cyan)}
+.btn-sm{padding:6px 14px;font-size:11px}
+
+.task-row{display:flex;align-items:flex-start;gap:12px;padding:11px 8px;border-bottom:1px solid rgba(255,255,255,.035);cursor:pointer;transition:background .15s;border-radius:3px}
+.task-row:last-child{border-bottom:none}
+.task-row:hover{background:rgba(255,255,255,.02)}
+.task-cb{width:20px;height:20px;border:2px solid var(--muted);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s;border-radius:3px;font-weight:700}
+.task-cb.done{background:var(--green);border-color:var(--green);color:#000}
+.task-txt{font-size:13px;flex:1}.task-txt.done{text-decoration:line-through;color:var(--muted)}
+.prog-bg{height:5px;background:rgba(255,255,255,.06);overflow:hidden;border-radius:3px;margin-top:5px}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .4s;border-radius:3px}
+
+.stars{display:flex;gap:5px;margin-top:4px}
+.star{font-size:20px;cursor:pointer;color:var(--muted);transition:color .1s;user-select:none;line-height:1}
+.star.on{color:var(--gold)}
+
+.badge{display:inline-block;padding:3px 10px;font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:600;border-radius:2px}
+.ba{background:rgba(0,212,255,.12);color:var(--cyan);border:1px solid rgba(0,212,255,.25)}
+.bf{background:rgba(168,85,247,.12);color:var(--purple);border:1px solid rgba(168,85,247,.25)}
+.bc{background:rgba(0,230,118,.12);color:var(--green);border:1px solid rgba(0,230,118,.25)}
+.be{background:rgba(255,69,96,.12);color:var(--red);border:1px solid rgba(255,69,96,.25)}
+.bw{background:rgba(240,180,41,.12);color:var(--gold);border:1px solid rgba(240,180,41,.25)}
+.bh{background:rgba(0,230,118,.12);color:var(--green);border:1px solid rgba(0,230,118,.25)}
+.bm{background:rgba(255,140,66,.12);color:var(--orange);border:1px solid rgba(255,140,66,.25)}
+.bl{background:rgba(255,69,96,.12);color:var(--red);border:1px solid rgba(255,69,96,.25)}
+
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;min-width:560px}
+.tbl th{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{padding:12px 12px;border-bottom:1px solid rgba(255,255,255,.03);font-size:13px;vertical-align:middle}
+.tbl tr:hover td{background:rgba(240,180,41,.02)}
+.tbl tr:last-child td{border-bottom:none}
+
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(5px)}
+.modal-ov.hidden{display:none}
+.modal{background:var(--card);border:1px solid var(--border);padding:28px 30px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;position:relative}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold2),transparent)}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;color:#fff;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between}
+.modal-x{background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;line-height:1;padding:0;transition:color .2s}
+.modal-x:hover{color:var(--red)}
+
+.tab-bar{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab{padding:9px 18px;cursor:pointer;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab:hover:not(.active){color:var(--soft)}
+
+#toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#000;padding:12px 22px;font-size:13px;font-weight:700;z-index:9999;transform:translateY(80px);opacity:0;transition:all .3s;letter-spacing:.5px;pointer-events:none}
+#toast.show{transform:translateY(0);opacity:1}#toast.err{background:var(--red);color:#fff}
+
+.empty{text-align:center;padding:48px 20px;color:var(--muted)}.empty-ico{font-size:38px;margin-bottom:12px;opacity:.3}
+
+/* PORTFOLIO */
+.wallet-card{background:var(--card2);border:1px solid var(--border);padding:18px 20px;margin-bottom:12px}
+.wallet-addr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--soft);word-break:break-all;margin-top:5px}
+.wallet-bal{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--gold);letter-spacing:1px}
+.w-chain-badge{display:inline-block;padding:2px 8px;font-size:10px;background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.2);color:var(--cyan);letter-spacing:1px;text-transform:uppercase}
+.port-total{font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--gold);letter-spacing:2px;text-align:center;padding:20px 0;line-height:1}
+
+/* WEEKLY */
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:20px}
+.day-box{background:var(--card2);border:1px solid var(--border);padding:10px 8px;min-height:110px}
+.day-box.today{border-color:rgba(240,180,41,.4);background:rgba(240,180,41,.04)}
+.day-name{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:3px}
+.day-num{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);text-align:center;line-height:1;margin-bottom:7px}
+.dp{font-size:10px;padding:3px 5px;margin-bottom:3px;border-left:2px solid;background:rgba(0,0,0,.3);color:#6a8aaa;line-height:1.3;word-break:break-word}
+.dp.tw{border-left-color:#1da1f2;color:#5aaccc}
+.dp.tg{border-left-color:#0088cc;color:#5aaccc}
+.dp.air{border-left-color:var(--gold);color:#b89020}
+.dp.rc{border-left-color:var(--green);color:#5ab87a}
+
+.note-card{background:var(--card2);border:1px solid var(--border);padding:16px 18px;margin-bottom:10px;border-left:3px solid var(--gold)}
+
+.info-box{background:rgba(0,212,255,.05);border:1px solid var(--b2);border-left:3px solid var(--cyan);padding:14px 18px;margin-bottom:16px;font-size:13px;color:var(--soft);line-height:1.8}
+
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(240,180,41,.25);border-radius:2px}
+
+@media(max-width:900px){
+  .sidebar{width:56px}.sb-logo,.sb-user,.sb-section,.sb-bottom{display:none}
+  .sb-item{padding:14px;justify-content:center}.sb-item span:not(.sb-icon){display:none}
+  .main{margin-left:56px}.stat-row{grid-template-columns:1fr 1fr}
+  .g2,.g3{grid-template-columns:1fr}.fr,.fr.fr3{grid-template-columns:1fr}
+  .week-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:600px){.main{padding:14px 12px 60px}.page-title{font-size:26px}.stat-row{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- AUTH -->
+<div id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">AirdropAI</div>
+    <div class="auth-sub">Command Center · Your AI+Crypto Business Hub</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="authTab('login',this)">Login</div>
+      <div class="auth-tab" onclick="authTab('signup',this)">Sign Up</div>
+    </div>
+    <div class="auth-form active" id="loginForm">
+      <div class="field"><label>Username</label><input type="text" id="li-u" placeholder="Your username" autocomplete="username"></div>
+      <div class="field"><label>Password</label><input type="password" id="li-p" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="auth-btn" onclick="doLogin()">Login →</button>
+      <div class="auth-err" id="li-err">Incorrect username or password.</div>
+      <div class="auth-note">No account? <span onclick="authTab('signup',null)">Sign up free</span></div>
+      <div class="auth-note" style="margin-top:8px;color:rgba(240,180,41,.6)">Demo: username <strong>rejaul</strong> · password <strong>rejaul123</strong></div>
+    </div>
+    <div class="auth-form" id="signupForm">
+      <div class="field"><label>Full Name</label><input type="text" id="su-n" placeholder="e.g. Rejaul Karim"></div>
+      <div class="field"><label>Username</label><input type="text" id="su-u" placeholder="e.g. rejaul_crypto"></div>
+      <div class="field"><label>Password (min 6 chars)</label><input type="password" id="su-p" placeholder="••••••••"></div>
+      <div class="field"><label>Confirm Password</label><input type="password" id="su-p2" placeholder="Repeat password"></div>
+      <button class="auth-btn" onclick="doSignup()">Create Account →</button>
+      <div class="auth-err" id="su-err"></div>
+      <div class="auth-note">Already registered? <span onclick="authTab('login',null)">Login</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appShell">
+<div class="sidebar">
+  <div class="sb-logo"><div class="sb-logo-title">AirdropAI<br>Command</div><div class="sb-logo-sub" id="sb-date">—</div></div>
+  <div class="sb-user"><div class="sb-user-name" id="sb-uname">—</div><div class="sb-user-role">AI Crypto Researcher 🇮🇳</div></div>
+  <div class="sb-section">Main</div>
+  <div class="sb-item active" onclick="goPage('dashboard',this)"><span class="sb-icon">⚡</span><span>Dashboard</span></div>
+  <div class="sb-item" onclick="goPage('portfolio',this)"><span class="sb-icon">💼</span><span>Portfolio</span></div>
+  <div class="sb-item" onclick="goPage('airdrops',this)"><span class="sb-icon">🪂</span><span>Airdrops</span></div>
+  <div class="sb-item" onclick="goPage('content',this)"><span class="sb-icon">📝</span><span>Content</span></div>
+  <div class="sb-item" onclick="goPage('weekly',this)"><span class="sb-icon">📅</span><span>Weekly</span></div>
+  <div class="sb-section">Finance</div>
+  <div class="sb-item" onclick="goPage('income',this)"><span class="sb-icon">💰</span><span>Income</span></div>
+  <div class="sb-section">Tools</div>
+  <div class="sb-item" onclick="goPage('review',this)"><span class="sb-icon">📊</span><span>Weekly Review</span></div>
+  <div class="sb-item" onclick="goPage('notes',this)"><span class="sb-icon">🗒️</span><span>Notes</span></div>
+  <div class="sb-bottom"><div class="logout-btn" onclick="doLogout()"><span>🚪</span><span>Logout</span></div></div>
+</div>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="panel active" id="page-dashboard">
+  <div class="topbar">
+    <div><div class="page-title" id="greet">Good Day, <span id="gname">—</span> 👋</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Your AI+Crypto business hub</div></div>
+    <div class="date-chip" id="topdate">—</div>
+  </div>
+  <div class="stat-row">
+    <div class="stat-box"><span class="stat-n" id="ds-air">0</span><span class="stat-l">Active Airdrops</span></div>
+    <div class="stat-box"><span class="stat-n g" id="ds-earn">₹0</span><span class="stat-l">Total Earned</span></div>
+    <div class="stat-box"><span class="stat-n c" id="ds-posts">0</span><span class="stat-l">Posts This Week</span></div>
+    <div class="stat-box"><span class="stat-n r" id="ds-tasks">8</span><span class="stat-l">Tasks Remaining</span></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">⚡ Today's Tasks <span class="ctsub" id="tc-count">0/8</span></div>
+      <div id="taskList"></div>
+      <div style="margin-top:14px"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px"><span>Progress</span><span id="tc-pct">0%</span></div><div class="prog-bg"><div class="prog-fill" id="tc-bar" style="width:0%"></div></div></div>
+    </div>
+    <div class="card cc">
+      <div class="card-title">🚀 Quick Add Airdrop</div>
+      <div class="fg"><label class="lbl">Project Name *</label><input type="text" id="qa-name" placeholder="e.g. Grass Network"></div>
+      <div class="fr">
+        <div>
+          <label class="lbl">Blockchain</label>
+          <select id="qa-chain" onchange="chainChange('qa')">
+            <option value="Solana">Solana</option><option value="Ethereum">Ethereum</option>
+            <option value="Base">Base</option><option value="Arbitrum">Arbitrum</option>
+            <option value="BNB Chain">BNB Chain</option><option value="Optimism">Optimism</option>
+            <option value="zkSync">zkSync</option><option value="Other">Other (type below ↓)</option>
+          </select>
+          <input type="text" id="qa-cc" placeholder="Type chain name..." style="margin-top:8px;display:none">
+        </div>
+        <div><label class="lbl">Status</label>
+          <select id="qa-status"><option value="active">🔵 Active</option><option value="farming">🟣 Farming</option><option value="watching">🟡 Watching</option></select>
+        </div>
+      </div>
+      <div class="fr">
+        <div><label class="lbl">Deadline</label><input type="date" id="qa-dl"></div>
+        <div><label class="lbl">Est. Value (USD)</label><input type="text" id="qa-val" placeholder="$50–$200"></div>
+      </div>
+      <div class="fg"><label class="lbl">Authenticity (1=Risky · 5=Very Legit)</label>
+        <div class="stars" id="qa-stars" data-val="0">
+          <span class="star" onclick="setStar('qa-stars',1)">★</span><span class="star" onclick="setStar('qa-stars',2)">★</span>
+          <span class="star" onclick="setStar('qa-stars',3)">★</span><span class="star" onclick="setStar('qa-stars',4)">★</span>
+          <span class="star" onclick="setStar('qa-stars',5)">★</span>
+        </div>
+      </div>
+      <button class="btn btn-gold" style="width:100%;margin-top:4px" onclick="quickAdd()">+ ADD TO TRACKER</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🪂 Active Airdrops <button class="btn btn-out btn-sm" onclick="goPage('airdrops',null)">View All →</button></div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Project</th><th>Chain</th><th>Deadline</th><th>Est. Value</th><th>Auth</th><th>Posted</th></tr></thead><tbody id="dash-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- PORTFOLIO -->
+<div class="panel" id="page-portfolio">
+  <div class="topbar">
+    <div class="page-title">💼 Wallet <span>Portfolio</span></div>
+    <button class="btn btn-gold btn-sm" onclick="openM('walletModal')">+ Add Wallet</button>
+  </div>
+  <div class="g2" style="margin-bottom:16px">
+    <div class="card" style="text-align:center;padding:28px">
+      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Total Portfolio Value</div>
+      <div class="port-total" id="port-total">$0.00</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px" id="port-inr">≈ ₹0</div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Summary</div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span>Total Wallets</span><span style="color:var(--green);font-family:'JetBrains Mono',monospace" id="pt-wc">0</span></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span>Chains Tracked</span><span style="color:var(--cyan);font-family:'JetBrains Mono',monospace" id="pt-cc">0</span></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span>Best Wallet</span><span style="color:var(--gold);font-size:12px" id="pt-best">—</span></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0"><span>Last Updated</span><span style="color:var(--muted);font-size:12px" id="pt-upd">Never</span></div>
+    </div>
+  </div>
+  <div class="info-box">
+    <strong style="color:var(--cyan)">How to use:</strong><br>
+    1. Click "+ Add Wallet" → paste your wallet address + select chain + enter your balance in USD<br>
+    2. To get live balance: open <strong style="color:#fff">debank.com</strong> → paste address → copy the total USD value → enter it here<br>
+    3. Click "🔍 Explorer" to open the chain explorer directly for any wallet<br>
+    4. Click "✏️ Update" to refresh the balance whenever you check
+  </div>
+  <div id="walletList"><div class="empty"><div class="empty-ico">💼</div><div>No wallets yet. Click "+ Add Wallet" to start tracking.</div></div></div>
+</div>
+
+<!-- AIRDROPS -->
+<div class="panel" id="page-airdrops">
+  <div class="topbar">
+    <div class="page-title">🪂 Airdrop <span>Tracker</span></div>
+    <button class="btn btn-gold btn-sm" onclick="openM('airModal');clearAirForm()">+ New Airdrop</button>
+  </div>
+  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+    <select id="f-st" onchange="renderAirs()" style="width:auto;padding:8px 12px"><option value="">All Status</option><option value="active">Active</option><option value="farming">Farming</option><option value="watching">Watching</option><option value="completed">Completed</option><option value="expired">Expired</option></select>
+    <select id="f-ch" onchange="renderAirs()" style="width:auto;padding:8px 12px"><option value="">All Chains</option><option>Solana</option><option>Ethereum</option><option>Base</option><option>Arbitrum</option><option>BNB Chain</option></select>
+    <input type="text" id="f-sr" placeholder="🔍 Search project..." oninput="renderAirs()" style="width:180px">
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Project</th><th>Chain</th><th>Status</th><th>Deadline</th><th>Est. Value</th><th>Auth ★</th><th>Payout ₹</th><th>Posted</th><th>Actions</th></tr></thead><tbody id="air-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="panel" id="page-content">
+  <div class="topbar">
+    <div class="page-title">📝 Content <span>Planner</span></div>
+    <button class="btn btn-gold btn-sm" onclick="openM('ctModal');clearCtForm()">+ Plan Post</button>
+  </div>
+  <div class="tab-bar">
+    <div class="tab active" onclick="ctFilter('all',this)">All</div>
+    <div class="tab" onclick="ctFilter('planned',this)">Planned</div>
+    <div class="tab" onclick="ctFilter('ready',this)">Ready ✅</div>
+    <div class="tab" onclick="ctFilter('posted',this)">Posted 🚀</div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Date</th><th>Platform</th><th>Type</th><th>Topic</th><th>Canva</th><th>AI Prompt</th><th>Status</th><th>Actions</th></tr></thead><tbody id="ct-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- WEEKLY -->
+<div class="panel" id="page-weekly">
+  <div class="topbar"><div class="page-title">📅 Weekly <span>View</span></div></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <button class="btn btn-out btn-sm" onclick="wkOff--;renderWeek()">◀ Prev</button>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--gold)" id="wk-label">—</div>
+    <button class="btn btn-out btn-sm" onclick="wkOff++;renderWeek()">Next ▶</button>
+  </div>
+  <div class="week-grid" id="wk-grid"></div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">📋 This Week Must-Do</div>
+      <div class="task-row" onclick="toggleWkTask(this)"><div class="task-cb"></div><div class="task-txt">Post 7 Twitter threads (1 per day)</div></div>
+      <div class="task-row" onclick="toggleWkTask(this)"><div class="task-cb"></div><div class="task-txt">Post 14 Telegram guides (2 per day)</div></div>
+      <div class="task-row" onclick="toggleWkTask(this)"><div class="task-cb"></div><div class="task-txt">Research & add 5+ new airdrops to tracker</div></div>
+      <div class="task-row" onclick="toggleWkTask(this)"><div class="task-cb"></div><div class="task-txt">Farm Grass daily (every single day)</div></div>
+      <div class="task-row" onclick="toggleWkTask(this)"><div class="task-cb"></div><div class="task-txt">Farm Backpack & Base (daily)</div></div>
+      <div class="task-row" onclick="toggleWkTask(this)"><div class="task-cb"></div><div class="task-txt">Reply to 70 crypto tweets (10/day)</div></div>
+      <div class="task-row" onclick="toggleWkTask(this)"><div class="task-cb"></div><div class="task-txt">Follow 35 new accounts (5/day)</div></div>
+      <div class="task-row" onclick="toggleWkTask(this)"><div class="task-cb"></div><div class="task-txt">Sunday: Post weekly recap on Telegram</div></div>
+    </div>
+    <div class="card gc">
+      <div class="card-title">💰 Income Goals</div>
+      <div class="task-row" onclick="toggleWkTask(this)"><div class="task-cb"></div><div class="task-txt">Share Binance affiliate in 2 posts</div></div>
+      <div class="task-row" onclick="toggleWkTask(this)"><div class="task-cb"></div><div class="task-txt">Check affiliate dashboard for signups</div></div>
+      <div class="task-row" onclick="toggleWkTask(this)"><div class="task-cb"></div><div class="task-txt">Log all income in Income tracker</div></div>
+      <div class="task-row" onclick="toggleWkTask(this)"><div class="task-cb"></div><div class="task-txt">DM 3 projects for community manager role</div></div>
+      <div class="task-row" onclick="toggleWkTask(this)"><div class="task-cb"></div><div class="task-txt">Create 1 PDF guide this week (Gumroad)</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INCOME -->
+<div class="panel" id="page-income">
+  <div class="topbar">
+    <div class="page-title">💰 Income <span>Log</span></div>
+    <button class="btn btn-gold btn-sm" onclick="openM('incModal');clearIncForm()">+ Add Entry</button>
+  </div>
+  <div class="stat-row">
+    <div class="stat-box"><span class="stat-n g" id="is-tot">₹0</span><span class="stat-l">Total Income</span></div>
+    <div class="stat-box"><span class="stat-n c" id="is-mon">₹0</span><span class="stat-l">This Month</span></div>
+    <div class="stat-box"><span class="stat-n r" id="is-exp">₹0</span><span class="stat-l">Expenses</span></div>
+    <div class="stat-box"><span class="stat-n" id="is-net">₹0</span><span class="stat-l">Net Profit</span></div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Date</th><th>Type</th><th>Source</th><th>Amount</th><th>Notes</th><th>Del</th></tr></thead><tbody id="inc-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- REVIEW -->
+<div class="panel" id="page-review">
+  <div class="topbar">
+    <div class="page-title">📊 Weekly <span>Review</span></div>
+    <button class="btn btn-gold btn-sm" onclick="saveReview()">💾 Save Review</button>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">📈 Numbers</div>
+      <div class="fg"><label class="lbl">Week Of</label><input type="date" id="rv-wk"></div>
+      <div class="fr"><div><label class="lbl">Twitter Posts</label><input type="number" id="rv-tw" placeholder="0"></div><div><label class="lbl">Telegram Posts</label><input type="number" id="rv-tg" placeholder="0"></div></div>
+      <div class="fr"><div><label class="lbl">Followers +/-</label><input type="text" id="rv-twf" placeholder="+23"></div><div><label class="lbl">TG Members +/-</label><input type="text" id="rv-tgm" placeholder="+15"></div></div>
+      <div class="fr"><div><label class="lbl">Airdrops Farmed</label><input type="number" id="rv-far" placeholder="0"></div><div><label class="lbl">Income This Week ₹</label><input type="number" id="rv-inc" placeholder="0"></div></div>
+      <div class="fr"><div><label class="lbl">Best Post Topic</label><input type="text" id="rv-best" placeholder="Thread topic..."></div><div><label class="lbl">Twitter Impressions</label><input type="text" id="rv-imp" placeholder="5,200"></div></div>
+    </div>
+    <div class="card cc">
+      <div class="card-title">🧠 Reflections</div>
+      <div class="fg"><label class="lbl">What Worked Well?</label><textarea id="rv-wk2" placeholder="Good engagement, strong airdrops..."></textarea></div>
+      <div class="fg"><label class="lbl">Challenges?</label><textarea id="rv-ch" placeholder="What was hard, what flopped..."></textarea></div>
+      <div class="fg"><label class="lbl">Top 3 Next Week Priorities</label><textarea id="rv-pr" placeholder="1.&#10;2.&#10;3." style="min-height:65px"></textarea></div>
+      <div class="fg"><label class="lbl">Mood / Energy</label>
+        <div class="stars" id="rv-mood" data-val="0" style="margin-top:4px">
+          <span class="star" onclick="setStar('rv-mood',1)" title="Bad">😞</span><span class="star" onclick="setStar('rv-mood',2)" title="OK">😐</span>
+          <span class="star" onclick="setStar('rv-mood',3)" title="Good">🙂</span><span class="star" onclick="setStar('rv-mood',4)" title="Great">😊</span>
+          <span class="star" onclick="setStar('rv-mood',5)" title="Amazing">🔥</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card"><div class="card-title">📁 Past Reviews</div><div id="past-rv"></div></div>
+</div>
+
+<!-- NOTES -->
+<div class="panel" id="page-notes">
+  <div class="topbar"><div class="page-title">🗒️ Notes &amp; <span>Ideas</span></div></div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">✨ Capture Idea</div>
+      <div class="fg"><label class="lbl">Title *</label><input type="text" id="n-t" placeholder="Thread idea, project, strategy..."></div>
+      <div class="fg"><label class="lbl">Category</label>
+        <select id="n-c"><option value="idea">💡 Content Idea</option><option value="project">🪂 Project to Research</option><option value="strategy">🎯 Strategy</option><option value="learn">📚 Lesson Learned</option><option value="reminder">⏰ Reminder</option></select>
+      </div>
+      <div class="fg"><label class="lbl">Details</label><textarea id="n-b" placeholder="Write your idea here..."></textarea></div>
+      <button class="btn btn-gold" style="width:100%" onclick="addNote()">💾 Save Note</button>
+    </div>
+    <div id="notes-grid"><div class="empty"><div class="empty-ico">💡</div><div>Your ideas appear here.</div></div></div>
+  </div>
+</div>
+
+</div><!-- main -->
+</div><!-- appShell -->
+
+<!-- ========= MODALS ========= -->
+
+<!-- ADD WALLET -->
+<div class="modal-ov hidden" id="walletModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title">💼 Add Wallet <button class="modal-x" onclick="closeM('walletModal')">×</button></div>
+    <div class="fg"><label class="lbl">Wallet Address *</label><input type="text" id="w-addr" placeholder="0x... or Solana address"></div>
+    <div class="fr">
+      <div>
+        <label class="lbl">Blockchain / Network</label>
+        <select id="w-chain" onchange="chainChange('w')">
+          <option value="Ethereum">Ethereum (EVM)</option><option value="Solana">Solana</option>
+          <option value="BNB Chain">BNB Chain</option><option value="Arbitrum">Arbitrum</option>
+          <option value="Base">Base</option><option value="Optimism">Optimism</option>
+          <option value="Polygon">Polygon</option><option value="Avalanche">Avalanche</option>
+          <option value="Bitcoin">Bitcoin</option><option value="Other">Other (type below ↓)</option>
+        </select>
+        <input type="text" id="w-cc" placeholder="Type chain name..." style="margin-top:8px;display:none">
+      </div>
+      <div><label class="lbl">Wallet Label</label><input type="text" id="w-label" placeholder="e.g. Main Farming Wallet"></div>
+    </div>
+    <div class="fr">
+      <div><label class="lbl">Balance (USD)</label><input type="number" id="w-bal" placeholder="125.50" step="0.01"></div>
+      <div><label class="lbl">Notes</label><input type="text" id="w-note" placeholder="e.g. Grass farming wallet"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-gold" style="flex:1" onclick="saveWallet()">💾 Save Wallet</button>
+      <button class="btn btn-out" onclick="closeM('walletModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- AIRDROP MODAL -->
+<div class="modal-ov hidden" id="airModal">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-title">🪂 Airdrop Details <button class="modal-x" onclick="closeM('airModal')">×</button></div>
+    <input type="hidden" id="af-id">
+    <div class="fr"><div><label class="lbl">Project Name *</label><input type="text" id="af-name" placeholder="e.g. Grass Network"></div><div><label class="lbl">Official Website</label><input type="text" id="af-url" placeholder="https://..."></div></div>
+    <div class="fr fr3">
+      <div>
+        <label class="lbl">Blockchain</label>
+        <select id="af-chain" onchange="chainChange('af')">
+          <option value="Solana">Solana</option><option value="Ethereum">Ethereum</option>
+          <option value="Base">Base</option><option value="Arbitrum">Arbitrum</option>
+          <option value="BNB Chain">BNB Chain</option><option value="Optimism">Optimism</option>
+          <option value="zkSync">zkSync</option><option value="Starknet">Starknet</option>
+          <option value="Other">Other (type below ↓)</option>
+        </select>
+        <input type="text" id="af-cc" placeholder="Type chain..." style="margin-top:8px;display:none">
+      </div>
+      <div><label class="lbl">Status</label>
+        <select id="af-status"><option value="active">🔵 Active</option><option value="farming">🟣 Farming</option><option value="watching">🟡 Watching</option><option value="completed">🟢 Completed</option><option value="expired">🔴 Expired</option></select>
+      </div>
+      <div><label class="lbl">Date Added</label><input type="date" id="af-dated"></div>
+    </div>
+    <div class="fr fr3">
+      <div><label class="lbl">Deadline</label><input type="date" id="af-dl"></div>
+      <div><label class="lbl">Est. Value (USD)</label><input type="text" id="af-est" placeholder="$50–$300"></div>
+      <div><label class="lbl">Actual Payout (₹)</label><input type="text" id="af-pay" placeholder="Fill when paid"></div>
+    </div>
+    <div class="fr">
+      <div><label class="lbl">Investors / Backers</label><input type="text" id="af-inv" placeholder="a16z, Polychain..."></div>
+      <div><label class="lbl">Required Actions</label><input type="text" id="af-act" placeholder="Trade, Testnet, Discord"></div>
+    </div>
+    <div class="fr">
+      <div><label class="lbl">Cost to Farm</label><input type="text" id="af-cost" placeholder="Free / ~$5 gas"></div>
+      <div><label class="lbl">Time (mins)</label><input type="number" id="af-time" placeholder="15"></div>
+    </div>
+    <div class="fg"><label class="lbl">Authenticity (1=Risky · 5=Very Legit)</label>
+      <div class="stars" id="af-stars" data-val="0">
+        <span class="star" onclick="setStar('af-stars',1)">★</span><span class="star" onclick="setStar('af-stars',2)">★</span>
+        <span class="star" onclick="setStar('af-stars',3)">★</span><span class="star" onclick="setStar('af-stars',4)">★</span>
+        <span class="star" onclick="setStar('af-stars',5)">★</span>
+      </div>
+    </div>
+    <div class="fg"><label class="lbl">Scam Flags</label><input type="text" id="af-flag" placeholder="Anonymous team, no whitepaper..."></div>
+    <div class="fg"><label class="lbl">Published On</label>
+      <div style="display:flex;gap:18px;margin-top:6px">
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px"><input type="checkbox" id="af-tw" style="width:auto;cursor:pointer"> 🐦 Twitter</label>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px"><input type="checkbox" id="af-tg" style="width:auto;cursor:pointer"> 📱 Telegram</label>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px"><input type="checkbox" id="af-pdf" style="width:auto;cursor:pointer"> 📄 PDF</label>
+      </div>
+    </div>
+    <div class="fg"><label class="lbl">Notes</label><textarea id="af-notes" placeholder="Personal observations, tips..."></textarea></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-gold" style="flex:1" onclick="saveAir()">💾 Save Airdrop</button>
+      <button class="btn btn-out" onclick="closeM('airModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT MODAL -->
+<div class="modal-ov hidden" id="ctModal">
+  <div class="modal">
+    <div class="modal-title">📝 Plan a Post <button class="modal-x" onclick="closeM('ctModal')">×</button></div>
+    <input type="hidden" id="cf-id">
+    <div class="fr fr3">
+      <div><label class="lbl">Date to Post</label><input type="date" id="cf-date"></div>
+      <div><label class="lbl">Platform</label>
+        <select id="cf-plat"><option value="twitter">🐦 Twitter Thread</option><option value="telegram">📱 Telegram Post</option><option value="both">🐦📱 Both</option><option value="pdf">📄 PDF Guide</option></select>
+      </div>
+      <div><label class="lbl">Post Type</label>
+        <select id="cf-type"><option value="airdrop">🚨 Airdrop Alert</option><option value="education">📚 Education</option><option value="story">👤 Personal Story</option><option value="tips">💡 Tips Thread</option><option value="recap">📊 Weekly Recap</option><option value="hindi">🇮🇳 Hindi</option><option value="affiliate">🔗 Affiliate</option></select>
+      </div>
+    </div>
+    <div class="fg"><label class="lbl">Topic / Title *</label><input type="text" id="cf-topic" placeholder="e.g. Grass Network Season 2 Airdrop Guide"></div>
+    <div class="fg"><label class="lbl">Hook (Opening Line)</label><input type="text" id="cf-hook" placeholder="🚨 Grass Season 2 — 170M tokens..."></div>
+    <div class="fg"><label class="lbl">Key Points to Cover</label><textarea id="cf-pts" placeholder="• What is it&#10;• Why it's legit&#10;• Step by step&#10;• Scam warning&#10;• CTA to Telegram"></textarea></div>
+    <div class="fr">
+      <div><label class="lbl">AI Prompt Used</label>
+        <select id="cf-prompt"><option value="">— Select —</option><option value="p1">Prompt #1 — Airdrop Research</option><option value="p2">Prompt #2 — Twitter Thread</option><option value="p3">Prompt #3 — Hindi</option><option value="p4">Prompt #4 — Telegram Post</option><option value="p5">Prompt #5 — Calendar</option><option value="p6">Prompt #6 — Canva Brief</option><option value="p7">Prompt #7 — Scam Check</option><option value="p8">Prompt #8 — Reply</option></select>
+      </div>
+      <div><label class="lbl">Status</label>
+        <select id="cf-status"><option value="planned">📋 Planned</option><option value="writing">✍️ Writing</option><option value="ready">✅ Ready</option><option value="posted">🚀 Posted</option></select>
+      </div>
+    </div>
+    <div class="fr">
+      <div><label class="lbl">Canva Graphic</label><select id="cf-can"><option value="no">❌ Not yet</option><option value="yes">✅ Done</option><option value="na">N/A</option></select></div>
+      <div><label class="lbl">Linked Project</label><input type="text" id="cf-proj" placeholder="Project name"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-gold" style="flex:1" onclick="saveCt()">💾 Save Post</button>
+      <button class="btn btn-out" onclick="closeM('ctModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- INCOME MODAL -->
+<div class="modal-ov hidden" id="incModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-title">💰 Add Entry <button class="modal-x" onclick="closeM('incModal')">×</button></div>
+    <input type="hidden" id="if-id">
+    <div class="fr fr3">
+      <div><label class="lbl">Date</label><input type="date" id="if-date"></div>
+      <div><label class="lbl">Type</label><select id="if-type"><option value="income">💚 Income</option><option value="expense">🔴 Expense</option></select></div>
+      <div><label class="lbl">Amount ₹ *</label><input type="number" id="if-amt" placeholder="2500"></div>
+    </div>
+    <div class="fr">
+      <div><label class="lbl">Source</label>
+        <select id="if-src"><option value="airdrop">🪂 Airdrop Payout</option><option value="vip">👑 VIP Telegram</option><option value="affiliate">🔗 Affiliate</option><option value="sponsor">📢 Sponsorship</option><option value="pdf">📄 PDF Sale</option><option value="xrev">🐦 X Revenue</option><option value="cmgr">👥 Comm. Manager</option><option value="tools">🛠️ Tools (expense)</option><option value="gas">⛽ Gas (expense)</option><option value="other">📦 Other</option></select>
+      </div>
+      <div><label class="lbl">Notes</label><input type="text" id="if-note" placeholder="e.g. Grass Season 1 payout"></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-gold" style="flex:1" onclick="saveInc()">💾 Save</button>
+      <button class="btn btn-out" onclick="closeM('incModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ── STORAGE ──
+const S={
+  get:k=>{try{return JSON.parse(localStorage.getItem('rcc2_'+k)||'null')}catch{return null}},
+  set:(k,v)=>{localStorage.setItem('rcc2_'+k,JSON.stringify(v));return v},
+  arr:k=>S.get(k)||[]
+};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today=()=>new Date().toISOString().slice(0,10);
+const fmtD=d=>{if(!d)return'—';const[y,m,dy]=d.split('-');return`${dy}/${m}/${y}`};
+const fmtM=d=>{if(!d)return'—';const ms=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const[y,m]=d.split('-');return`${ms[+m-1]} ${y}`};
+const inr=n=>'₹'+Number(n||0).toLocaleString('en-IN');
+const dLeft=d=>{if(!d)return null;return Math.ceil((new Date(d)-new Date())/864e5)};
+const V=id=>document.getElementById(id)?.value?.trim()||'';
+
+// ── TOAST ──
+let toastTmr;
+function toast(msg,err=false){
+  clearTimeout(toastTmr);
+  const t=document.getElementById('toast');
+  t.textContent=(err?'✗ ':'✓ ')+msg;
+  t.className='show'+(err?' err':'');
+  toastTmr=setTimeout(()=>t.className='',2500);
+}
+
+// ── MODAL ──
+function openM(id){document.getElementById(id).classList.remove('hidden')}
+function closeM(id){document.getElementById(id).classList.add('hidden')}
+document.addEventListener('click',e=>{if(e.target.classList.contains('modal-ov'))e.target.classList.add('hidden')});
+
+// ── STARS ──
+function setStar(id,val){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.dataset.val=val;
+  el.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<val));
+}
+function getStar(id){return parseInt(document.getElementById(id)?.dataset?.val||0)}
+
+// ── CHAIN CUSTOM ──
+function chainChange(pfx){
+  const sel=document.getElementById(pfx+'-chain');
+  const cc=document.getElementById(pfx+'-cc');
+  if(cc)cc.style.display=sel?.value==='Other'?'block':'none';
+}
+function getChain(pfx){
+  const sel=document.getElementById(pfx+'-chain');
+  if(sel?.value==='Other'){const cc=document.getElementById(pfx+'-cc');return cc?.value?.trim()||'Other';}
+  return sel?.value||'Other';
+}
+
+// ── AUTH ──
+let curUser=null;
+function authTab(tab,el){
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.auth-form').forEach(f=>f.classList.remove('active'));
+  if(el)el.classList.add('active');
+  else document.querySelectorAll('.auth-tab')[tab==='login'?0:1].classList.add('active');
+  document.getElementById(tab==='login'?'loginForm':'signupForm').classList.add('active');
+}
+function doSignup(){
+  const name=V('su-n'),user=V('su-u').toLowerCase().replace(/\s/g,'_'),pass=V('su-p'),pass2=V('su-p2');
+  const err=msg=>{const e=document.getElementById('su-err');e.style.display='block';e.textContent=msg};
+  if(!name||!user||!pass)return err('Please fill all fields.');
+  if(pass.length<6)return err('Password must be at least 6 characters.');
+  if(pass!==pass2)return err('Passwords do not match.');
+  const users=S.get('users')||{};
+  if(users[user])return err('Username taken. Choose another.');
+  users[user]={name,pass,created:today()};
+  S.set('users',users);
+  toast('Account created! Login now.');
+  authTab('login',null);
+  document.getElementById('li-u').value=user;
+}
+function doLogin(){
+  const user=V('li-u').toLowerCase(),pass=V('li-p');
+  const err=document.getElementById('li-err');
+  if(user==='rejaul'&&pass==='rejaul123'){launchApp({name:'Rejaul Karim',username:'rejaul'});return;}
+  const users=S.get('users')||{};
+  if(!users[user]||users[user].pass!==pass){err.style.display='block';return;}
+  err.style.display='none';
+  launchApp({name:users[user].name,username:user});
+}
+function launchApp(user){
+  curUser=user;S.set('curUser',user);
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('appShell').style.display='block';
+  initApp();
+}
+function doLogout(){
+  if(!confirm('Logout?'))return;
+  curUser=null;S.set('curUser',null);
+  document.getElementById('appShell').style.display='none';
+  document.getElementById('authScreen').style.display='flex';
+  document.getElementById('li-p').value='';
+}
+window.onload=()=>{const cu=S.get('curUser');if(cu)launchApp(cu)};
+
+// ── INIT ──
+function initApp(){
+  const u=curUser||S.get('curUser');if(!u)return;curUser=u;
+  document.getElementById('sb-uname').textContent=u.name||u.username;
+  const now=new Date();
+  const h=now.getHours();
+  const g=h<12?'Good Morning':h<17?'Good Afternoon':'Good Evening';
+  document.getElementById('greet').innerHTML=`${g}, <span id="gname">${(u.name||'Friend').split(' ')[0]}</span> 👋`;
+  const ds=now.toLocaleDateString('en-IN',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  document.getElementById('topdate').textContent=ds;
+  document.getElementById('sb-date').textContent=now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  buildTasks();renderDashAir();updateDashStats();
+  renderAirs();renderCt();renderWeek();
+  renderInc();updateIncStats();renderWallets();renderNotes();renderReviews();
+}
+
+// ── NAVIGATION ──
+function goPage(id,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  document.getElementById('page-'+id)?.classList.add('active');
+  if(el)el.classList.add('active');
+  if(id==='dashboard'){renderDashAir();updateDashStats();}
+  if(id==='airdrops')renderAirs();
+  if(id==='content')renderCt();
+  if(id==='weekly')renderWeek();
+  if(id==='income'){renderInc();updateIncStats();}
+  if(id==='portfolio')renderWallets();
+  if(id==='review')renderReviews();
+  if(id==='notes')renderNotes();
+}
+
+// ── TASKS ──
+const TASKS=[
+  '🔍 Find 2 new airdrop projects to research',
+  '🤖 Use Claude Prompt #1 — research both projects',
+  '⚠️ Run scam check (Prompt #7) on both projects',
+  '🎨 Make Canva graphic for Twitter post',
+  '🐦 Write & post Twitter thread (Prompt #2)',
+  '📱 Post 2 airdrop guides on Telegram',
+  '💬 Reply to 10 big crypto Twitter accounts',
+  '🌿 Farm daily (Grass + Backpack + Base)',
+];
+let taskS=[];
+function buildTasks(){
+  const key='tasks_'+today();
+  taskS=S.get(key)||new Array(TASKS.length).fill(false);
+  if(taskS.length!==TASKS.length)taskS=new Array(TASKS.length).fill(false);
+  document.getElementById('taskList').innerHTML=TASKS.map((t,i)=>`
+    <div class="task-row" onclick="toggleTask(${i})">
+      <div class="task-cb${taskS[i]?' done':''}" id="tc${i}">${taskS[i]?'✓':''}</div>
+      <div class="task-txt${taskS[i]?' done':''}" id="tt${i}">${t}</div>
+    </div>`).join('');
+  updateTaskProg();
+}
+function toggleTask(i){
+  taskS[i]=!taskS[i];S.set('tasks_'+today(),taskS);
+  const cb=document.getElementById('tc'+i),tt=document.getElementById('tt'+i);
+  cb.className='task-cb'+(taskS[i]?' done':'');cb.textContent=taskS[i]?'✓':'';
+  tt.className='task-txt'+(taskS[i]?' done':'');
+  updateTaskProg();
+}
+function toggleWkTask(row){
+  const cb=row.querySelector('.task-cb'),tt=row.querySelector('.task-txt');
+  const done=cb.classList.toggle('done');cb.textContent=done?'✓':'';tt.classList.toggle('done',done);
+}
+function updateTaskProg(){
+  const done=taskS.filter(Boolean).length,total=taskS.length,pct=Math.round(done/total*100);
+  const e=id=>document.getElementById(id);
+  if(e('tc-count'))e('tc-count').textContent=`${done}/${total}`;
+  if(e('tc-pct'))e('tc-pct').textContent=pct+'%';
+  if(e('tc-bar'))e('tc-bar').style.width=pct+'%';
+  if(e('ds-tasks'))e('ds-tasks').textContent=total-done;
+}
+
+// ── STATS ──
+function weekDates(off=0){
+  const d=[],n=new Date();n.setDate(n.getDate()+off*7);
+  const day=n.getDay(),mon=new Date(n);mon.setDate(n.getDate()-(day===0?6:day-1));
+  for(let i=0;i<7;i++){const x=new Date(mon);x.setDate(mon.getDate()+i);d.push(x.toISOString().slice(0,10));}
+  return d;
+}
+function updateDashStats(){
+  const air=S.arr('airdrops').filter(a=>a.status==='active'||a.status==='farming');
+  document.getElementById('ds-air').textContent=air.length;
+  const inc=S.arr('income').filter(i=>i.type==='income').reduce((s,i)=>s+Number(i.amount),0);
+  document.getElementById('ds-earn').textContent=inr(inc);
+  const tw=weekDates(0);
+  const posts=S.arr('content').filter(c=>c.status==='posted'&&tw.includes(c.date)).length;
+  document.getElementById('ds-posts').textContent=posts;
+}
+
+// ── DASHBOARD AIRDROPS ──
+function renderDashAir(){
+  const tbody=document.getElementById('dash-tbody');
+  const airs=S.arr('airdrops').filter(a=>a.status==='active'||a.status==='farming').slice(0,6);
+  if(!airs.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">No active airdrops. Add one above!</td></tr>';return;}
+  tbody.innerHTML=airs.map(a=>{
+    const dl=dLeft(a.deadline);
+    const dlc=dl!==null&&dl<=3?'var(--red)':dl!==null&&dl<=7?'var(--orange)':'inherit';
+    const dlt=dl===null?'—':dl<0?'Expired':dl===0?'Today!':dl+'d left';
+    return`<tr>
+      <td><strong>${a.name}</strong>${a.investors?`<br><small style="color:var(--muted);font-size:11px">${a.investors}</small>`:''}</td>
+      <td><span style="font-size:11px;padding:2px 8px;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);color:var(--cyan)">${a.chain}</span></td>
+      <td style="color:${dlc};font-size:12px;font-family:'JetBrains Mono',monospace">${dlt}</td>
+      <td style="color:var(--green);font-size:12px;font-family:'JetBrains Mono',monospace">${a.estValue||'—'}</td>
+      <td style="color:var(--gold)">${'★'.repeat(a.rating||0)}${'☆'.repeat(5-(a.rating||0))}</td>
+      <td>${(a.postedTw?'🐦':'')+' '+(a.postedTg?'📱':'')||((!a.postedTw&&!a.postedTg)?'—':'')}</td>
+    </tr>`;}).join('');
+}
+
+// ── QUICK ADD ──
+function quickAdd(){
+  const name=V('qa-name');if(!name){toast('Enter project name!',true);return;}
+  const chain=getChain('qa');
+  const all=S.arr('airdrops');
+  all.unshift({id:uid(),name,chain,status:document.getElementById('qa-status').value,deadline:document.getElementById('qa-dl').value,estValue:V('qa-val'),rating:getStar('qa-stars'),dateAdded:today(),postedTw:false,postedTg:false,postedPdf:false});
+  S.set('airdrops',all);
+  document.getElementById('qa-name').value='';document.getElementById('qa-val').value='';document.getElementById('qa-dl').value='';setStar('qa-stars',0);
+  toast(name+' added!');renderDashAir();updateDashStats();
+}
+
+// ── AIRDROP TRACKER ──
+function clearAirForm(){
+  ['af-name','af-url','af-est','af-pay','af-inv','af-act','af-cost','af-time','af-flag','af-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('af-id').value='';document.getElementById('af-dated').value=today();
+  document.getElementById('af-tw').checked=false;document.getElementById('af-tg').checked=false;document.getElementById('af-pdf').checked=false;
+  setStar('af-stars',0);document.getElementById('af-cc').style.display='none';document.getElementById('af-chain').value='Solana';
+}
+function saveAir(){
+  const name=V('af-name');if(!name){toast('Enter project name!',true);return;}
+  const all=S.arr('airdrops'),id=V('af-id'),chain=getChain('af');
+  const item={id:id||uid(),name,url:V('af-url'),chain,status:document.getElementById('af-status').value,dateAdded:V('af-dated')||today(),deadline:document.getElementById('af-dl').value,estValue:V('af-est'),payout:V('af-pay'),investors:V('af-inv'),actions:V('af-act'),cost:V('af-cost'),time:V('af-time'),rating:getStar('af-stars'),flags:V('af-flag'),notes:V('af-notes'),postedTw:document.getElementById('af-tw').checked,postedTg:document.getElementById('af-tg').checked,postedPdf:document.getElementById('af-pdf').checked};
+  if(id){const i=all.findIndex(a=>a.id===id);i>-1?all[i]=item:all.unshift(item);}else all.unshift(item);
+  S.set('airdrops',all);closeM('airModal');toast(name+' saved!');renderAirs();renderDashAir();updateDashStats();
+}
+function editAir(id){
+  const a=S.arr('airdrops').find(x=>x.id===id);if(!a)return;
+  clearAirForm();
+  document.getElementById('af-id').value=a.id;
+  document.getElementById('af-name').value=a.name||'';document.getElementById('af-url').value=a.url||'';
+  document.getElementById('af-est').value=a.estValue||'';document.getElementById('af-pay').value=a.payout||'';
+  document.getElementById('af-inv').value=a.investors||'';document.getElementById('af-act').value=a.actions||'';
+  document.getElementById('af-cost').value=a.cost||'';document.getElementById('af-time').value=a.time||'';
+  document.getElementById('af-flag').value=a.flags||'';document.getElementById('af-notes').value=a.notes||'';
+  document.getElementById('af-dated').value=a.dateAdded||'';document.getElementById('af-dl').value=a.deadline||'';
+  document.getElementById('af-status').value=a.status||'active';
+  document.getElementById('af-tw').checked=!!a.postedTw;document.getElementById('af-tg').checked=!!a.postedTg;document.getElementById('af-pdf').checked=!!a.postedPdf;
+  setStar('af-stars',a.rating||0);
+  const sel=document.getElementById('af-chain');
+  const known=Array.from(sel.options).map(o=>o.value);
+  if(known.includes(a.chain)){sel.value=a.chain;document.getElementById('af-cc').style.display='none';}
+  else{sel.value='Other';document.getElementById('af-cc').style.display='block';document.getElementById('af-cc').value=a.chain||'';}
+  openM('airModal');
+}
+function delAir(id){if(!confirm('Delete this airdrop?'))return;S.set('airdrops',S.arr('airdrops').filter(a=>a.id!==id));toast('Deleted');renderAirs();renderDashAir();updateDashStats();}
+function renderAirs(){
+  let all=S.arr('airdrops');
+  const fs=document.getElementById('f-st')?.value||'';
+  const fc=document.getElementById('f-ch')?.value||'';
+  const sr=document.getElementById('f-sr')?.value?.toLowerCase()||'';
+  if(fs)all=all.filter(a=>a.status===fs);
+  if(fc)all=all.filter(a=>a.chain===fc);
+  if(sr)all=all.filter(a=>a.name.toLowerCase().includes(sr));
+  const tbody=document.getElementById('air-tbody');
+  if(!all.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:30px">No airdrops found. Add your first!</td></tr>';return;}
+  const sbm={active:'ba',farming:'bf',watching:'bw',completed:'bc',expired:'be'};
+  tbody.innerHTML=all.map(a=>{
+    const dl=dLeft(a.deadline);
+    const dlc=dl!==null&&dl<0?'var(--red)':dl!==null&&dl<=7?'var(--orange)':'inherit';
+    const dlt=dl===null?'—':dl<0?'Expired':dl===0?'Today!':dl+'d';
+    const stars='★'.repeat(a.rating||0)+'☆'.repeat(5-(a.rating||0));
+    const ac=a.rating>=4?'bh':a.rating>=2?'bm':'bl';
+    return`<tr>
+      <td><strong>${a.name}</strong>${a.url?`<br><a href="${a.url}" target="_blank" style="font-size:11px;color:var(--cyan)">🔗 Site</a>`:''}${a.investors?`<br><small style="color:var(--muted);font-size:11px">${a.investors}</small>`:''}</td>
+      <td><span style="font-size:11px;padding:2px 8px;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);color:var(--cyan)">${a.chain}</span></td>
+      <td><span class="badge ${sbm[a.status]||'bw'}">${a.status}</span></td>
+      <td style="color:${dlc};font-size:12px;font-family:'JetBrains Mono',monospace;white-space:nowrap">${dlt}<br><small style="color:var(--muted)">${fmtD(a.deadline)}</small></td>
+      <td style="color:var(--green);font-size:12px;font-family:'JetBrains Mono',monospace">${a.estValue||'—'}</td>
+      <td><span class="badge ${ac}">${stars}</span></td>
+      <td style="color:var(--gold);font-size:12px;font-family:'JetBrains Mono',monospace">${a.payout?inr(a.payout):'—'}</td>
+      <td style="font-size:13px">${(a.postedTw?'🐦':'')}${(a.postedTg?' 📱':'')}${(a.postedPdf?' 📄':'')}${(!a.postedTw&&!a.postedTg&&!a.postedPdf?'—':'')}</td>
+      <td style="white-space:nowrap"><button class="btn btn-out btn-sm" onclick="editAir('${a.id}')" style="margin-right:4px">Edit</button><button class="btn btn-red btn-sm" onclick="delAir('${a.id}')">✕</button></td>
+    </tr>`;}).join('');
+}
+
+// ── CONTENT ──
+let ctF='all';
+function ctFilter(tab,el){ctF=tab;document.querySelectorAll('.tab-bar .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderCt();}
+function clearCtForm(){
+  ['cf-topic','cf-hook','cf-pts','cf-proj'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('cf-id').value='';document.getElementById('cf-date').value=today();
+  document.getElementById('cf-status').value='planned';document.getElementById('cf-can').value='no';document.getElementById('cf-prompt').value='';
+}
+function saveCt(){
+  const topic=V('cf-topic');if(!topic){toast('Enter a topic!',true);return;}
+  const all=S.arr('content'),id=V('cf-id');
+  const item={id:id||uid(),date:document.getElementById('cf-date').value||today(),platform:document.getElementById('cf-plat').value,type:document.getElementById('cf-type').value,topic,hook:V('cf-hook'),points:document.getElementById('cf-pts').value,prompt:document.getElementById('cf-prompt').value,status:document.getElementById('cf-status').value,canva:document.getElementById('cf-can').value,proj:V('cf-proj')};
+  if(id){const i=all.findIndex(c=>c.id===id);i>-1?all[i]=item:all.unshift(item);}else all.unshift(item);
+  S.set('content',all);closeM('ctModal');toast(topic+' saved!');renderCt();updateDashStats();
+}
+function editCt(id){
+  const c=S.arr('content').find(x=>x.id===id);if(!c)return;
+  clearCtForm();
+  document.getElementById('cf-id').value=c.id;document.getElementById('cf-date').value=c.date||'';
+  document.getElementById('cf-plat').value=c.platform||'twitter';document.getElementById('cf-type').value=c.type||'airdrop';
+  document.getElementById('cf-topic').value=c.topic||'';document.getElementById('cf-hook').value=c.hook||'';
+  document.getElementById('cf-pts').value=c.points||'';document.getElementById('cf-prompt').value=c.prompt||'';
+  document.getElementById('cf-status').value=c.status||'planned';document.getElementById('cf-can').value=c.canva||'no';document.getElementById('cf-proj').value=c.proj||'';
+  openM('ctModal');
+}
+function delCt(id){if(!confirm('Delete?'))return;S.set('content',S.arr('content').filter(c=>c.id!==id));toast('Deleted');renderCt();updateDashStats();}
+function renderCt(){
+  let all=S.arr('content');if(ctF!=='all')all=all.filter(c=>c.status===ctF);
+  all.sort((a,b)=>a.date>b.date?1:-1);
+  const tbody=document.getElementById('ct-tbody');
+  if(!all.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:30px">No posts yet. Plan your first!</td></tr>';return;}
+  const pI={twitter:'🐦',telegram:'📱',both:'🐦📱',pdf:'📄'};
+  const tC={airdrop:'var(--red)',education:'var(--cyan)',story:'var(--purple)',tips:'var(--gold)',recap:'var(--green)',hindi:'var(--orange)',affiliate:'var(--green)'};
+  const sB={planned:'📋',writing:'✍️',ready:'✅',posted:'🚀'};
+  const pL={p1:'#1',p2:'#2',p3:'#3 Hindi',p4:'#4 TG',p5:'#5 Cal',p6:'#6 Canva',p7:'#7 Scam',p8:'#8 Reply'};
+  tbody.innerHTML=all.map(c=>`<tr>
+    <td style="font-family:'JetBrains Mono',monospace;font-size:11px;white-space:nowrap">${fmtD(c.date)}</td>
+    <td style="font-size:15px">${pI[c.platform]||c.platform}</td>
+    <td><span style="font-size:11px;color:${tC[c.type]||'inherit'};text-transform:capitalize">${c.type}</span></td>
+    <td><strong style="font-size:12px">${c.topic}</strong>${c.proj?`<br><small style="color:var(--muted)">${c.proj}</small>`:''}</td>
+    <td style="text-align:center">${c.canva==='yes'?'✅':c.canva==='na'?'N/A':'❌'}</td>
+    <td style="font-size:11px;color:var(--muted)">${pL[c.prompt]||'—'}</td>
+    <td>${sB[c.status]||''} <span style="font-size:11px">${c.status}</span></td>
+    <td style="white-space:nowrap"><button class="btn btn-out btn-sm" onclick="editCt('${c.id}')" style="margin-right:4px">Edit</button><button class="btn btn-red btn-sm" onclick="delCt('${c.id}')">✕</button></td>
+  </tr>`).join('');
+}
+
+// ── WEEKLY VIEW ──
+let wkOff=0;
+function renderWeek(){
+  const dates=weekDates(wkOff),days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],todStr=today();
+  const ct=S.arr('content');
+  document.getElementById('wk-label').textContent='Week of '+fmtM(dates[0]);
+  const pI={twitter:'tw',telegram:'tg',both:'tw',pdf:'air'};
+  document.getElementById('wk-grid').innerHTML=dates.map((d,i)=>{
+    const dc=new Date(d),isT=d===todStr;
+    const dayC=ct.filter(c=>c.date===d);
+    const def=i<5?['tw:🐦 Thread','tg:📱 TG ×2','air:🪂 Farm']:i===6?['air:🪂 Farm','rc:📊 Recap']:['air:🪂 Farm'];
+    return`<div class="day-box${isT?' today':''}">
+      <div class="day-name">${days[i]}</div>
+      <div class="day-num">${dc.getDate()}</div>
+      ${def.map(t=>{const[c,tx]=t.split(':');return`<div class="dp ${c}">${tx}</div>`}).join('')}
+      ${dayC.map(c=>`<div class="dp ${pI[c.platform]||'air'}">${c.topic.slice(0,14)}...</div>`).join('')}
+    </div>`;}).join('');
+}
+
+// ── INCOME ──
+function clearIncForm(){
+  document.getElementById('if-id').value='';document.getElementById('if-date').value=today();
+  document.getElementById('if-amt').value='';document.getElementById('if-note').value='';
+  document.getElementById('if-type').value='income';document.getElementById('if-src').value='airdrop';
+}
+function saveInc(){
+  const amt=parseFloat(V('if-amt'));if(!amt||amt<=0){toast('Enter valid amount!',true);return;}
+  const all=S.arr('income');
+  all.unshift({id:uid(),date:document.getElementById('if-date').value||today(),type:document.getElementById('if-type').value,source:document.getElementById('if-src').value,amount:amt,notes:V('if-note')});
+  S.set('income',all);closeM('incModal');toast('Entry saved!');renderInc();updateIncStats();updateDashStats();
+}
+function delInc(id){if(!confirm('Delete?'))return;S.set('income',S.arr('income').filter(i=>i.id!==id));toast('Deleted');renderInc();updateIncStats();updateDashStats();}
+function renderInc(){
+  const all=S.arr('income'),tbody=document.getElementById('inc-tbody');
+  if(!all.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">No entries yet.</td></tr>';return;}
+  const sL={airdrop:'🪂 Airdrop',vip:'👑 VIP',affiliate:'🔗 Affiliate',sponsor:'📢 Sponsorship',pdf:'📄 PDF',xrev:'🐦 X Revenue',cmgr:'👥 Comm. Mgr',tools:'🛠️ Tools',gas:'⛽ Gas',other:'📦 Other'};
+  tbody.innerHTML=all.map(i=>`<tr>
+    <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${fmtD(i.date)}</td>
+    <td><span style="color:${i.type==='income'?'var(--green)':'var(--red)'}">${i.type==='income'?'💚 Income':'🔴 Expense'}</span></td>
+    <td>${sL[i.source]||i.source}</td>
+    <td style="font-family:'JetBrains Mono',monospace;font-weight:600;color:${i.type==='income'?'var(--green)':'var(--red)'}">${inr(i.amount)}</td>
+    <td style="font-size:12px;color:var(--muted)">${i.notes||'—'}</td>
+    <td><button class="btn btn-red btn-sm" onclick="delInc('${i.id}')">✕</button></td>
+  </tr>`).join('');
+}
+function updateIncStats(){
+  const all=S.arr('income'),mon=new Date().toISOString().slice(0,7);
+  const ti=all.filter(i=>i.type==='income').reduce((s,i)=>s+Number(i.amount),0);
+  const mi=all.filter(i=>i.type==='income'&&i.date.startsWith(mon)).reduce((s,i)=>s+Number(i.amount),0);
+  const te=all.filter(i=>i.type==='expense').reduce((s,i)=>s+Number(i.amount),0);
+  const net=ti-te;
+  document.getElementById('is-tot').textContent=inr(ti);
+  document.getElementById('is-mon').textContent=inr(mi);
+  document.getElementById('is-exp').textContent=inr(te);
+  const nel=document.getElementById('is-net');nel.textContent=inr(net);nel.style.color=net>=0?'var(--green)':'var(--red)';
+}
+
+// ── PORTFOLIO ──
+function saveWallet(){
+  const addr=V('w-addr');if(!addr){toast('Enter wallet address!',true);return;}
+  const chain=getChain('w'),all=S.arr('wallets');
+  all.unshift({id:uid(),addr,chain,label:V('w-label')||'Wallet '+(all.length+1),balance:parseFloat(V('w-bal'))||0,notes:V('w-note'),updated:today()});
+  S.set('wallets',all);
+  ['w-addr','w-label','w-bal','w-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('w-cc').style.display='none';closeM('walletModal');toast('Wallet added!');renderWallets();
+}
+function delWallet(id){if(!confirm('Remove wallet?'))return;S.set('wallets',S.arr('wallets').filter(w=>w.id!==id));toast('Removed');renderWallets();}
+function updateBal(id){
+  const v=parseFloat(prompt('Enter updated balance in USD (current price from DeBank/Zapper):'));
+  if(isNaN(v)||v<0)return;
+  const all=S.arr('wallets'),i=all.findIndex(w=>w.id===id);
+  if(i>-1){all[i].balance=v;all[i].updated=today();}
+  S.set('wallets',all);toast('Balance updated!');renderWallets();
+}
+const EXP={Ethereum:a=>`https://etherscan.io/address/${a}`,Solana:a=>`https://solscan.io/account/${a}`,Base:a=>`https://basescan.org/address/${a}`,Arbitrum:a=>`https://arbiscan.io/address/${a}`,'BNB Chain':a=>`https://bscscan.com/address/${a}`,Optimism:a=>`https://optimistic.etherscan.io/address/${a}`,Polygon:a=>`https://polygonscan.com/address/${a}`,Bitcoin:a=>`https://mempool.space/address/${a}`};
+function renderWallets(){
+  const all=S.arr('wallets');
+  const total=all.reduce((s,w)=>s+Number(w.balance||0),0);
+  document.getElementById('port-total').textContent='$'+total.toFixed(2);
+  document.getElementById('port-inr').textContent='≈ '+inr(Math.round(total*83.5));
+  document.getElementById('pt-wc').textContent=all.length;
+  document.getElementById('pt-cc').textContent=[...new Set(all.map(w=>w.chain))].length;
+  const best=all.length?[...all].sort((a,b)=>b.balance-a.balance)[0]:null;
+  document.getElementById('pt-best').textContent=best?`${best.label} ($${Number(best.balance).toFixed(2)})`:'—';
+  document.getElementById('pt-upd').textContent=all.length?fmtD(today()):'Never';
+  const el=document.getElementById('walletList');
+  if(!all.length){el.innerHTML='<div class="empty"><div class="empty-ico">💼</div><div>No wallets yet. Click "+ Add Wallet".</div></div>';return;}
+  el.innerHTML=all.map(w=>`
+    <div class="wallet-card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap">
+            <strong style="font-size:15px">${w.label}</strong>
+            <span class="w-chain-badge">${w.chain}</span>
+          </div>
+          <div class="wallet-addr">${w.addr}</div>
+          ${w.notes?`<div style="font-size:12px;color:var(--muted);margin-top:6px">📝 ${w.notes}</div>`:''}
+          <div style="font-size:11px;color:var(--muted);margin-top:5px">Updated: ${fmtD(w.updated)}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">Balance</div>
+          <div class="wallet-bal">$${Number(w.balance||0).toFixed(2)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">≈ ${inr(Math.round(Number(w.balance||0)*83.5))}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <a href="${(EXP[w.chain]||EXP.Ethereum)(w.addr)}" target="_blank" class="btn btn-cyan btn-sm">🔍 Explorer</a>
+        <a href="https://debank.com/profile/${w.addr}" target="_blank" class="btn btn-out btn-sm">📊 DeBank</a>
+        <button class="btn btn-out btn-sm" onclick="updateBal('${w.id}')">✏️ Update Balance</button>
+        <button class="btn btn-red btn-sm" onclick="delWallet('${w.id}')">✕ Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── REVIEW ──
+function saveReview(){
+  const all=S.arr('reviews');
+  all.unshift({id:uid(),weekof:V('rv-wk')||today(),tw:V('rv-tw'),tg:V('rv-tg'),twf:V('rv-twf'),tgm:V('rv-tgm'),farmed:V('rv-far'),inc:V('rv-inc'),best:V('rv-best'),imp:V('rv-imp'),worked:document.getElementById('rv-wk2').value,challenges:document.getElementById('rv-ch').value,prio:document.getElementById('rv-pr').value,mood:getStar('rv-mood')});
+  S.set('reviews',all);toast('Review saved!');renderReviews();
+}
+function delRv(id){if(!confirm('Delete?'))return;S.set('reviews',S.arr('reviews').filter(r=>r.id!==id));toast('Deleted');renderReviews();}
+function renderReviews(){
+  const all=S.arr('reviews'),el=document.getElementById('past-rv');
+  if(!all.length){el.innerHTML='<div class="empty"><div class="empty-ico">📊</div><div>No reviews yet.</div></div>';return;}
+  const me=['','😞','😐','🙂','😊','🔥'];
+  el.innerHTML=all.map(r=>`<div class="card" style="margin-bottom:12px;padding:16px 20px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div><strong style="color:var(--gold)">${fmtD(r.weekof)}</strong><br>
+        <small style="color:var(--muted)">🐦${r.tw||0} · 📱${r.tg||0} · 🪂${r.farmed||0} · 💰${inr(r.inc||0)}</small>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="font-size:20px">${me[r.mood||0]}</span>
+        <button class="btn btn-red btn-sm" onclick="delRv('${r.id}')">✕</button>
+      </div>
+    </div>
+    ${r.worked?`<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--green);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">✅ What Worked</div><div style="font-size:12px;color:var(--soft)">${r.worked}</div></div>`:''}
+    ${r.challenges?`<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--red);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">⚠️ Challenges</div><div style="font-size:12px;color:var(--soft)">${r.challenges}</div></div>`:''}
+    ${r.prio?`<div><div style="font-size:10px;color:var(--cyan);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">🎯 Next Week</div><div style="font-size:12px;color:var(--soft);white-space:pre-line">${r.prio}</div></div>`:''}
+  </div>`).join('');
+}
+
+// ── NOTES ──
+function addNote(){
+  const title=V('n-t');if(!title){toast('Enter a title!',true);return;}
+  const all=S.arr('notes');
+  all.unshift({id:uid(),title,cat:document.getElementById('n-c').value,body:document.getElementById('n-b').value,date:today()});
+  S.set('notes',all);document.getElementById('n-t').value='';document.getElementById('n-b').value='';toast('Note saved!');renderNotes();
+}
+function delNote(id){if(!confirm('Delete?'))return;S.set('notes',S.arr('notes').filter(n=>n.id!==id));toast('Deleted');renderNotes();}
+function renderNotes(){
+  const all=S.arr('notes'),el=document.getElementById('notes-grid');
+  if(!all.length){el.innerHTML='<div class="empty"><div class="empty-ico">💡</div><div>Your ideas appear here.</div></div>';return;}
+  const cC={idea:'var(--gold)',project:'var(--cyan)',strategy:'var(--purple)',learn:'var(--green)',reminder:'var(--red)'};
+  const cI={idea:'💡',project:'🪂',strategy:'🎯',learn:'📚',reminder:'⏰'};
+  el.innerHTML=all.map(n=>`<div class="note-card" style="border-left-color:${cC[n.cat]||'var(--gold)'}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
+      <strong style="font-size:13px">${cI[n.cat]||'💡'} ${n.title}</strong>
+      <button class="btn btn-red btn-sm" onclick="delNote('${n.id}')" style="padding:2px 8px;font-size:10px">✕</button>
+    </div>
+    <div style="font-size:10px;color:${cC[n.cat]};letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">${n.cat} · ${fmtD(n.date)}</div>
+    ${n.body?`<div style="font-size:12px;color:var(--soft);white-space:pre-line;line-height:1.5">${n.body}</div>`:''}
+  </div>`).join('');
+}
+</script>
+</body>
+</html>
