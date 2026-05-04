@@ -188,7 +188,7 @@ textarea{resize:vertical;min-height:75px}
       <div class="auth-tab" onclick="authTab('signup',this)">Sign Up</div>
     </div>
     <div class="auth-form active" id="loginForm">
-      <div class="field"><label>Email</label><input type="text" id="li-u" placeholder="your@email.com"autocomplete="username"></div>
+      <div class="field"><label>Email</label><input type="text" id="li-u" placeholder="your@email.com" autocomplete="username"></div>
       <div class="field"><label>Password</label><input type="password" id="li-p" placeholder="••••••••" autocomplete="current-password"></div>
       <button class="auth-btn" onclick="doLogin()">Login →</button>
       <div class="auth-err" id="li-err">Incorrect username or password.</div>
@@ -596,9 +596,6 @@ textarea{resize:vertical;min-height:75px}
     </div>
   </div>
 </div>
-
-<script>
-'use strict';
 // ── STORAGE ──
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
@@ -643,6 +640,24 @@ function saveCloudData() {
   }, 300);
 }
 
+// ── STORAGE ──
+const S = {
+  get: k => cloudData[k] ?? null,
+  set: (k, v) => {
+    cloudData[k] = v;
+    saveCloudData();
+    return v;
+  },
+  arr: k => cloudData[k] || []
+};
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const today = () => new Date().toISOString().slice(0,10);
+const fmtD = d => { if(!d)return '—'; const [y,m,dy]=d.split('-'); return `${dy}/${m}/${y}` };
+const fmtM = d => { if(!d)return '—'; const ms=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; const [y,m]=d.split('-'); return `${ms[+m-1]} ${y}` };
+const inr = n => '₹' + Number(n||0).toLocaleString('en-IN');
+const dLeft = d => { if(!d)return null; return Math.ceil((new Date(d)-new Date())/864e5) };
+const V = id => document.getElementById(id)?.value?.trim() || '';
 
 // ── TOAST ──
 let toastTmr;
