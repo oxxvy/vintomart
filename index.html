@@ -188,16 +188,15 @@ textarea{resize:vertical;min-height:75px}
       <div class="auth-tab" onclick="authTab('signup',this)">Sign Up</div>
     </div>
     <div class="auth-form active" id="loginForm">
-      <div class="field"><label>Email</label><input type="text" id="li-u" placeholder="Your username" autocomplete="username"></div>
+      <div class="field"><label>Email</label><input type="text" id="li-u" placeholder="your@email.com"autocomplete="username"></div>
       <div class="field"><label>Password</label><input type="password" id="li-p" placeholder="••••••••" autocomplete="current-password"></div>
       <button class="auth-btn" onclick="doLogin()">Login →</button>
       <div class="auth-err" id="li-err">Incorrect username or password.</div>
       <div class="auth-note">No account? <span onclick="authTab('signup',null)">Sign up free</span></div>
-      <div class="auth-note" style="margin-top:8px;color:rgba(240,180,41,.6)">Demo: username <strong>rejaul</strong> · password <strong>rejaul123</strong></div>
     </div>
     <div class="auth-form" id="signupForm">
       <div class="field"><label>Full Name</label><input type="text" id="su-n" placeholder="e.g. Rejaul Hoque"></div>
-      <div class="field"><label>Email</label><input type="text" id="su-u" placeholder="e.g. rejaul_crypto"></div>
+      <div class="field"><label>Email</label><input type="text" id="su-u" placeholder="your@email.com"></div>
       <div class="field"><label>Password (min 6 chars)</label><input type="password" id="su-p" placeholder="••••••••"></div>
       <div class="field"><label>Confirm Password</label><input type="password" id="su-p2" placeholder="Repeat password"></div>
       <button class="auth-btn" onclick="doSignup()">Create Account →</button>
@@ -601,22 +600,49 @@ textarea{resize:vertical;min-height:75px}
 <script>
 'use strict';
 // ── STORAGE ──
-const S = {
-  get: k => cloudData[k] ?? null,
-  set: (k, v) => {
-    cloudData[k] = v;
-    saveCloudData();
-    return v;
-  },
-  arr: k => cloudData[k] || []
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+<script>
+'use strict';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyApZJRCy35_ko75B-C9Wrv3xHag_Gf7IZ8",
+  authDomain: "dropelite-96fc0.firebaseapp.com",
+  projectId: "dropelite-96fc0",
+  storageBucket: "dropelite-96fc0.firebasestorage.app",
+  messagingSenderId: "640292984681",
+  appId: "1:640292984681:web:364f43d539ecd9c0e9cff8"
 };
-const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const today=()=>new Date().toISOString().slice(0,10);
-const fmtD=d=>{if(!d)return'—';const[y,m,dy]=d.split('-');return`${dy}/${m}/${y}`};
-const fmtM=d=>{if(!d)return'—';const ms=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const[y,m]=d.split('-');return`${ms[+m-1]} ${y}`};
-const inr=n=>'₹'+Number(n||0).toLocaleString('en-IN');
-const dLeft=d=>{if(!d)return null;return Math.ceil((new Date(d)-new Date())/864e5)};
-const V=id=>document.getElementById(id)?.value?.trim()||'';
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let cloudData = {};
+let saveTimer = null;
+
+function userDoc() {
+  return db.collection('users').doc(auth.currentUser.uid).collection('app').doc('state');
+}
+
+async function loadCloudData() {
+  const snap = await userDoc().get();
+  cloudData = snap.exists ? (snap.data().data || {}) : {};
+}
+
+function saveCloudData() {
+  if (!auth.currentUser) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    userDoc().set({
+      data: cloudData,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  }, 300);
+}
+
 
 // ── TOAST ──
 let toastTmr;
