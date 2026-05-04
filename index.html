@@ -196,7 +196,7 @@ textarea{resize:vertical;min-height:75px}
       <div class="auth-note" style="margin-top:8px;color:rgba(240,180,41,.6)">Demo: username <strong>rejaul</strong> · password <strong>rejaul123</strong></div>
     </div>
     <div class="auth-form" id="signupForm">
-      <div class="field"><label>Full Name</label><input type="text" id="su-n" placeholder="e.g. Rejaul Karim"></div>
+      <div class="field"><label>Full Name</label><input type="text" id="su-n" placeholder="e.g. Rejaul Hoque"></div>
       <div class="field"><label>Username</label><input type="text" id="su-u" placeholder="e.g. rejaul_crypto"></div>
       <div class="field"><label>Password (min 6 chars)</label><input type="password" id="su-p" placeholder="••••••••"></div>
       <div class="field"><label>Confirm Password</label><input type="password" id="su-p2" placeholder="Repeat password"></div>
@@ -676,7 +676,7 @@ function doSignup(){
 function doLogin(){
   const user=V('li-u').toLowerCase(),pass=V('li-p');
   const err=document.getElementById('li-err');
-  if(user==='rejaul'&&pass==='rejaul123'){launchApp({name:'Rejaul Karim',username:'rejaul'});return;}
+  if(user==='rejaul'&&pass==='rejaul123'){launchApp({name:'Rejaul Hoque',username:'rejaul'});return;}
   const users=S.get('users')||{};
   if(!users[user]||users[user].pass!==pass){err.style.display='block';return;}
   err.style.display='none';
